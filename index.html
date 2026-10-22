@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ملاحظاتي">
+<meta name="theme-color" content="#f2f4f3">
+<title>ملاحظاتي</title>
+<style>
+:root{
+  --bg:#f2f4f3; --surface:#ffffff; --text:#1c2321; --muted:#6b7773; --line:#dde3e0;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --danger:#b3382c;
+  --c0:#ffffff; --c1:#fff1a8; --c2:#cfeede; --c3:#ffd9d2; --c4:#d3e6fb;
+  --font:"SF Arabic","Geeza Pro","Noto Naskh Arabic","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#111615; --surface:#1b2220; --text:#eaf0ee; --muted:#93a19c; --line:#2a3330;
+    --accent:#4cc3aa; --accent-ink:#06201a; --danger:#ff8a7a;
+    --c0:#1b2220; --c1:#4a4320; --c2:#1f4237; --c3:#512b25; --c4:#22384f;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font)}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:18px 18px 10px;border-bottom:1px solid var(--line)}
+h1{margin:0 0 12px;font-size:30px;font-weight:800;letter-spacing:-.2px}
+.search{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--text);
+  border-radius:12px;padding:11px 14px;font:inherit;font-size:16px;outline:none}
+.search:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+main{padding:14px 14px 0;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media(min-width:700px){main{grid-template-columns:repeat(3,1fr);max-width:960px;margin:auto}}
+.note{border-radius:16px;padding:14px;border:1px solid color-mix(in srgb,var(--text) 8%,transparent);
+  cursor:pointer;min-height:96px;overflow:hidden;position:relative;text-align:start;font:inherit;color:var(--text);width:100%}
+.note h3{margin:0 0 6px;font-size:16px;font-weight:700;line-height:1.4}
+.note p{margin:0;font-size:14px;line-height:1.7;color:var(--text);opacity:.8;white-space:pre-wrap;
+  display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.note time{display:block;margin-top:10px;font-size:11.5px;color:var(--muted)}
+.pin{position:absolute;top:10px;left:10px;font-size:13px}
+.section{grid-column:1/-1;font-size:13px;color:var(--muted);margin:6px 4px 0;font-weight:600}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:70px 20px;line-height:1.9}
+.empty b{display:block;color:var(--text);font-size:18px;margin-bottom:4px}
+.fab{position:fixed;left:20px;bottom:calc(22px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:20px;
+  border:0;background:var(--accent);color:var(--accent-ink);font-size:32px;line-height:1;cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);display:grid;place-items:center}
+.fab:active{transform:scale(.95)}
+.fab:focus-visible,.btn:focus-visible,.dot:focus-visible,.note:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.editor{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.editor.open{display:flex;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.editor.open{animation:none}}
+.bar{display:flex;align-items:center;gap:6px;padding:12px 12px 8px}
+.btn{border:0;background:transparent;color:var(--accent);font:inherit;font-size:16px;font-weight:700;
+  padding:10px 12px;border-radius:10px;cursor:pointer}
+.btn.danger{color:var(--danger)}
+.btn.icon{font-size:20px;color:var(--muted);padding:8px 10px}
+.btn.icon.on{color:var(--accent)}
+.spacer{flex:1}
+.fields{flex:1;display:flex;flex-direction:column;padding:4px 20px 0;min-height:0}
+.title{border:0;background:transparent;color:var(--text);font:inherit;font-size:24px;font-weight:800;padding:8px 0;outline:none;width:100%}
+.body{flex:1;border:0;background:transparent;color:var(--text);font:inherit;font-size:17px;line-height:1.9;
+  resize:none;outline:none;width:100%;padding:6px 0 20px}
+.title::placeholder,.body::placeholder{color:var(--muted);opacity:.7}
+.colors{display:flex;gap:12px;padding:12px 20px 14px;border-top:1px solid color-mix(in srgb,var(--text) 10%,transparent);align-items:center}
+.dot{width:32px;height:32px;border-radius:50%;border:2px solid color-mix(in srgb,var(--text) 22%,transparent);cursor:pointer;padding:0}
+.dot.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.status{font-size:12px;color:var(--muted);margin-inline-start:auto}
+.toast{position:fixed;right:50%;transform:translateX(50%);bottom:calc(100px + env(safe-area-inset-bottom));
+  background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;display:none}
+.toast.show{display:block}
+.toast button{background:none;border:0;color:inherit;font:inherit;font-weight:700;text-decoration:underline;margin-inline-start:12px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ملاحظاتي</h1>
+  <input id="q" class="search" type="search" placeholder="ابحث في الملاحظات" aria-label="ابحث في الملاحظات">
+</header>
+
+<main id="list" aria-live="polite"></main>
+
+<button class="fab" id="add" aria-label="ملاحظة جديدة">+</button>
+
+<section class="editor" id="editor" role="dialog" aria-label="تحرير الملاحظة">
+  <div class="bar">
+    <button class="btn" id="done">تم</button>
+    <span class="spacer"></span>
+    <button class="btn icon" id="pinBtn" aria-label="تثبيت الملاحظة">📌</button>
+    <button class="btn danger" id="del">حذف</button>
+  </div>
+  <div class="fields">
+    <input class="title" id="title" placeholder="العنوان" maxlength="120">
+    <textarea class="body" id="body" placeholder="اكتب ملاحظتك هنا…"></textarea>
+  </div>
+  <div class="colors" id="colors">
+    <button class="dot" data-c="0" style="background:var(--c0)" aria-label="بدون لون"></button>
+    <button class="dot" data-c="1" style="background:var(--c1)" aria-label="أصفر"></button>
+    <button class="dot" data-c="2" style="background:var(--c2)" aria-label="أخضر"></button>
+    <button class="dot" data-c="3" style="background:var(--c3)" aria-label="وردي"></button>
+    <button class="dot" data-c="4" style="background:var(--c4)" aria-label="أزرق"></button>
+    <span class="status" id="status"></span>
+  </div>
+</section>
+
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="undo">تراجع</button></div>
+
+<script>
+const KEY = 'notes-app-v1';
+let notes = [];
+let mem = null;
+let current = null;
+let lastDeleted = null, toastTimer = null;
+
+const $ = id => document.getElementById(id);
+const el = { list:$('list'), q:$('q'), editor:$('editor'), title:$('title'), body:$('body'),
+  pin:$('pinBtn'), colors:$('colors'), status:$('status'), toast:$('toast') };
+
+function load(){
+  try { notes = JSON.parse(localStorage.getItem(KEY) || '[]'); }
+  catch(e){ notes = mem || []; }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(notes)); }
+  catch(e){ mem = notes; }
+}
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(ts){
+  const d = new Date(ts), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return sameDay
+    ? d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'})
+    : d.toLocaleDateString('ar-SA',{day:'numeric',month:'short'});
+}
+
+function card(n){
+  return `<button class="note" data-id="${n.id}" style="background:var(--c${n.color||0})">
+    ${n.pinned ? '<span class="pin">📌</span>' : ''}
+    ${n.title ? `<h3>${esc(n.title)}</h3>` : ''}
+    ${n.body ? `<p>${esc(n.body)}</p>` : ''}
+    <time>${fmt(n.updated)}</time></button>`;
+}
+
+function render(){
+  const term = el.q.value.trim().toLowerCase();
+  const items = notes
+    .filter(n => !term || (n.title + ' ' + n.body).toLowerCase().includes(term))
+    .sort((a,b) => (b.pinned|0) - (a.pinned|0) || b.updated - a.updated);
+
+  if(!items.length){
+    el.list.innerHTML = term
+      ? `<div class="empty"><b>ما لقينا شيء</b>جرّب كلمة ثانية</div>`
+      : `<div class="empty"><b>ما عندك ملاحظات</b>اضغط على + عشان تكتب أول ملاحظة</div>`;
+    return;
+  }
+  const pinned = items.filter(n => n.pinned), rest = items.filter(n => !n.pinned);
+  let html = '';
+  if(pinned.length){ html += `<div class="section">المثبتة</div>` + pinned.map(card).join(''); }
+  if(rest.length){ if(pinned.length) html += `<div class="section">الأخرى</div>`; html += rest.map(card).join(''); }
+  el.list.innerHTML = html;
+}
+
+function open(n){
+  current = n;
+  el.title.value = n.title; el.body.value = n.body;
+  paint();
+  el.editor.classList.add('open');
+  el.status.textContent = '';
+  if(!n.title && !n.body) el.body.focus();
+}
+function paint(){
+  el.pin.classList.toggle('on', !!current.pinned);
+  el.editor.style.background = current.color ? `var(--c${current.color})` : 'var(--bg)';
+  el.colors.querySelectorAll('.dot').forEach(d => d.classList.toggle('sel', +d.dataset.c === (current.color||0)));
+}
+function commit(){
+  current.title = el.title.value.trim();
+  current.body = el.body.value;
+  current.updated = Date.now();
+  const i = notes.findIndex(n => n.id === current.id);
+  if(i === -1) notes.push(current); else notes[i] = current;
+  save();
+}
+function close(){
+  if(!current) return;
+  const empty = !el.title.value.trim() && !el.body.value.trim();
+  if(empty){ notes = notes.filter(n => n.id !== current.id); save(); }
+  else commit();
+  current = null;
+  el.editor.classList.remove('open');
+  render();
+}
+
+let t;
+function autosave(){
+  el.status.textContent = '…';
+  clearTimeout(t);
+  t = setTimeout(() => {
+    if(!current || (!el.title.value.trim() && !el.body.value.trim())) return;
+    commit(); el.status.textContent = 'تم الحفظ';
+  }, 500);
+}
+el.title.addEventListener('input', autosave);
+el.body.addEventListener('input', autosave);
+
+$('add').onclick = () => open({id:uid(), title:'', body:'', color:0, pinned:false, updated:Date.now()});
+$('done').onclick = close;
+el.pin.onclick = () => { current.pinned = !current.pinned; paint(); autosave(); };
+el.colors.addEventListener('click', e => {
+  const d = e.target.closest('.dot'); if(!d) return;
+  current.color = +d.dataset.c; paint(); autosave();
+});
+el.list.addEventListener('click', e => {
+  const c = e.target.closest('.note'); if(!c) return;
+  const n = notes.find(x => x.id === c.dataset.id);
+  if(n) open({...n});
+});
+el.q.addEventListener('input', render);
+
+$('del').onclick = () => {
+  lastDeleted = {...current};
+  notes = notes.filter(n => n.id !== current.id);
+  save(); current = null;
+  el.editor.classList.remove('open');
+  render(); toast('انحذفت الملاحظة');
+};
+function toast(msg){
+  $('toastMsg').textContent = msg;
+  el.toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove('show'), 5000);
+}
+$('undo').onclick = () => {
+  if(lastDeleted){ notes.push(lastDeleted); lastDeleted = null; save(); render(); }
+  el.toast.classList.remove('show');
+};
+
+document.addEventListener('visibilitychange', () => { if(document.hidden && current) { commit(); } });
+
+load(); render();
+</script>
+</body>
+</html>
